@@ -90,14 +90,10 @@ namespace Post.Cmd.Domain.Aggregates
         public void AddComment(string comment, string username)
         {
             if (!_active)
-            {
                 throw new InvalidOperationException("Only active posts can have add comments");
-            }
-            if (string.IsNullOrWhiteSpace(comment))
-            {
 
+            if (string.IsNullOrWhiteSpace(comment))
                 throw new InvalidOperationException($"Post comment cannot be empty - {nameof(comment)}");
-            }
 
             RaiseEvent(new CommentAddedEvent
             {
