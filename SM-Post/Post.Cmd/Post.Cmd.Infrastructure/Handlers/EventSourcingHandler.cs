@@ -9,7 +9,7 @@ using Post.Cmd.Domain.Aggregates;
 
 namespace Post.Cmd.Infrastructure.Handlers
 {
-    public class EventSourcingHandler : IEventSourcingHandler<PostAggregate>
+    public class EventSourcingHandler<T> : IEventSourcingHandler<T> where T : AggregateRoot, new()
     {
         private readonly IEventStore _eventStore;
 
@@ -18,14 +18,15 @@ namespace Post.Cmd.Infrastructure.Handlers
             _eventStore = eventStore;
         }
 
-        public async Task<PostAggregate> GetByIdAsync(Guid id)
+        public async Task<T> GetByIdAsync(Guid id)
         {
-            var aggregate = new PostAggregate();
+            // Busca todos os eventos relacionados ao aggregateId no EventStore
             var events = await _eventStore.GetEventsAsync(id);
+            if (events == null || events.Count == 0)
+                throw new Exception("Aggregate not found.");
 
-            if (events == null || !events.Any())
-                return aggregate;
-
+            // Instancia um novo agregado e aplica todos os eventos para reconstruir seu estado
+            var aggregate = new T();
             aggregate.ReplayEvent(events);
             aggregate.Version = events.Select(x => x.Version).Max();
 
