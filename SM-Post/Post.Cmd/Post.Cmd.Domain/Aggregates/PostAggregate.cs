@@ -25,8 +25,10 @@ namespace Post.Cmd.Domain.Aggregates
 
         }
 
-        public PostAggregate(Guid id, string author, string message)
+        public void CreatePost(Guid id, string author, string message)
         {
+            if (_active)
+                throw new InvalidOperationException("Post already exists");
 
             RaiseEvent(new PostCreatedEvent
             {
